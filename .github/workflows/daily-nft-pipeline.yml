@@ -1,0 +1,50 @@
+name: Daily NFT Pipeline
+
+on:
+  schedule:
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+
+jobs:
+  mint-and-list:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run NFT pipeline
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_IDEA_MODEL: ${{ vars.OPENAI_IDEA_MODEL || 'gpt-4o-mini' }}
+          OPENAI_IMAGE_MODEL: ${{ vars.OPENAI_IMAGE_MODEL || 'gpt-image-1' }}
+          NFT_THEME: ${{ vars.NFT_THEME || 'futuristic digital collectibles' }}
+          NFT_COLLECTION_NAME: ${{ vars.NFT_COLLECTION_NAME }}
+          NFT_COLLECTION_DESCRIPTION: ${{ vars.NFT_COLLECTION_DESCRIPTION }}
+          PINATA_JWT: ${{ secrets.PINATA_JWT }}
+          RPC_URL: ${{ secrets.RPC_URL }}
+          CHAIN: ${{ vars.CHAIN || 'sepolia' }}
+          MINTER_PRIVATE_KEY: ${{ secrets.MINTER_PRIVATE_KEY }}
+          NFT_CONTRACT_ADDRESS: ${{ vars.NFT_CONTRACT_ADDRESS }}
+          MINT_FUNCTION_NAME: ${{ vars.MINT_FUNCTION_NAME || 'safeMint' }}
+          MARKETPLACE_PROVIDER: ${{ vars.MARKETPLACE_PROVIDER || 'openclaw' }}
+          OPENSEA_API_KEY: ${{ secrets.OPENSEA_API_KEY }}
+          OPENCLAW_API_URL: ${{ vars.OPENCLAW_API_URL }}
+          OPENCLAW_API_KEY: ${{ secrets.OPENCLAW_API_KEY }}
+          OPENCLAW_COLLECTION_SLUG: ${{ vars.OPENCLAW_COLLECTION_SLUG }}
+          LISTING_PRICE_ETH: ${{ vars.LISTING_PRICE_ETH || '0.01' }}
+          LISTING_DURATION_HOURS: ${{ vars.LISTING_DURATION_HOURS || '24' }}
+          METADATA_EXTERNAL_URL: ${{ vars.METADATA_EXTERNAL_URL }}
+          OUTPUT_DIR: ./output
+        run: npm start
